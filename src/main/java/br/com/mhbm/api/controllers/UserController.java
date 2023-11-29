@@ -1,6 +1,5 @@
 package br.com.mhbm.api.controllers;
 
-import br.com.mhbm.api.models.User;
 import br.com.mhbm.api.models.dto.UserDTO;
 import br.com.mhbm.api.services.UserService;
 import org.modelmapper.ModelMapper;
@@ -28,11 +27,21 @@ public class UserController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<UserDTO>> findAll(){
+    public ResponseEntity<List<UserDTO>> findAll() {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(service.findAll()
                         .stream()
                         .map(x -> mapper.map(x, UserDTO.class))
                         .toList());
+    }
+
+    @PostMapping("")
+    public ResponseEntity<UserDTO> create(@RequestBody UserDTO userDTO) {
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequestUri()
+                .path("/{id}")
+                .buildAndExpand(service.create(userDTO).getId())
+                .toUri();
+        return ResponseEntity.created(uri).build();
     }
 }
