@@ -1,6 +1,7 @@
 package br.com.mhbm.api.services;
 
 import br.com.mhbm.api.models.User;
+import br.com.mhbm.api.models.dto.UserDTO;
 
 import java.util.List;
 
