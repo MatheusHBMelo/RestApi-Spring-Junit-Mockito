@@ -30,9 +30,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> findAll() {
         List<User> users = repository.findAll();
-        if (users.isEmpty()){
+        if (users.isEmpty()) {
             throw new EmptyListException("User list is empty");
         }
         return users;
+    }
+
+    @Override
+    public User create(UserDTO userDTO) {
+        findUserByEmail(userDTO);
+        return repository.save(mapper.map(userDTO, User.class));
+    }
+
+    private void findUserByEmail(UserDTO userDTO) {
+        Optional<User> user = repository.findUserByEmail(userDTO.getEmail());
+        if (user.isPresent()) {
+            throw new DataIntegrityViolationException("E-mail já cadastrado no sistema");
+        }
     }
 }
