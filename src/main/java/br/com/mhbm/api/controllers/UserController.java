@@ -1,7 +1,9 @@
 package br.com.mhbm.api.controllers;
 
 import br.com.mhbm.api.models.User;
+import br.com.mhbm.api.models.dto.UserDTO;
 import br.com.mhbm.api.services.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/users")
 public class UserController {
     @Autowired
+    private ModelMapper mapper;
+
+    @Autowired
     private UserService service;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable(value = "id") Integer id) {
-        return ResponseEntity.status(HttpStatus.OK).body(service.findById(id));
+    public ResponseEntity<UserDTO> findById(@PathVariable(value = "id") Integer id) {
+        return ResponseEntity.status(HttpStatus.OK).body(mapper.map(service.findById(id), UserDTO.class));
     }
 }
