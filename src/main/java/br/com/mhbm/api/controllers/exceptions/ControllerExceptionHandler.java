@@ -1,5 +1,6 @@
 package br.com.mhbm.api.controllers.exceptions;
 
+import br.com.mhbm.api.services.exceptions.DataIntegrityViolationException;
 import br.com.mhbm.api.services.exceptions.EmptyListException;
 import br.com.mhbm.api.services.exceptions.ObjectNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,12 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(EmptyListException.class)
     public ResponseEntity<StandardError> emptyList(EmptyListException ex, HttpServletRequest request) {
         StandardError standardError = new StandardError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), ex.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(standardError);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<StandardError> dataIntegrityViolation(DataIntegrityViolationException ex, HttpServletRequest request) {
+        StandardError standardError = new StandardError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), ex.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(standardError);
     }
 }
