@@ -7,6 +7,7 @@ import br.com.mhbm.api.services.UserService;
 import br.com.mhbm.api.services.exceptions.DataIntegrityViolationException;
 import br.com.mhbm.api.services.exceptions.EmptyListException;
 import br.com.mhbm.api.services.exceptions.ObjectNotFoundException;
+import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,9 +43,29 @@ public class UserServiceImpl implements UserService {
         return repository.save(mapper.map(userDTO, User.class));
     }
 
+    @Override
+    public User update(UserDTO userDTO) {
+        User userDB = findById(userDTO.getId());
+        findUserByEmail(userDTO);
+        validaCampos(userDTO, userDB);
+        return repository.save(mapper.map(userDTO, User.class));
+    }
+
+    private void validaCampos(UserDTO userDTO, User userDB) {
+        if (userDTO.getName() == null){
+            userDTO.setName(userDB.getName());
+        }
+        if (userDTO.getEmail() == null){
+            userDTO.setEmail(userDB.getEmail());
+        }
+        if (userDTO.getPassword() == null){
+            userDTO.setPassword(userDB.getPassword());
+        }
+    }
+
     private void findUserByEmail(UserDTO userDTO) {
         Optional<User> user = repository.findUserByEmail(userDTO.getEmail());
-        if (user.isPresent()) {
+        if (user.isPresent() && !user.get().getId().equals(userDTO.getId())) {
             throw new DataIntegrityViolationException("E-mail já cadastrado no sistema");
         }
     }

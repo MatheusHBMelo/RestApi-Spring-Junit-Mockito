@@ -44,4 +44,10 @@ public class UserController {
                 .toUri();
         return ResponseEntity.created(uri).build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UserDTO> update(@PathVariable(value = "id") Integer id, @RequestBody UserDTO userDTO){
+        userDTO.setId(id);
+        return ResponseEntity.status(HttpStatus.OK).body(mapper.map(service.update(userDTO), UserDTO.class));
+    }
 }
