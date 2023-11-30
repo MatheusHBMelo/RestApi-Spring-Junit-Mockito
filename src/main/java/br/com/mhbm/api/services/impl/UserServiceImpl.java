@@ -7,7 +7,6 @@ import br.com.mhbm.api.services.UserService;
 import br.com.mhbm.api.services.exceptions.DataIntegrityViolationException;
 import br.com.mhbm.api.services.exceptions.EmptyListException;
 import br.com.mhbm.api.services.exceptions.ObjectNotFoundException;
-import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,22 +43,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User update(UserDTO userDTO) {
-        User userDB = findById(userDTO.getId());
-        findUserByEmail(userDTO);
-        validaCampos(userDTO, userDB);
-        return repository.save(mapper.map(userDTO, User.class));
+    public User update(UserDTO usuarioAtualizado) {
+        User usuarioAtualDB = findById(usuarioAtualizado.getId());
+        findUserByEmail(usuarioAtualizado);
+        validaCampos(usuarioAtualizado, usuarioAtualDB);
+        return repository.save(mapper.map(usuarioAtualizado, User.class));
     }
 
-    private void validaCampos(UserDTO userDTO, User userDB) {
-        if (userDTO.getName() == null){
-            userDTO.setName(userDB.getName());
+    @Override
+    public void delete(Integer id) {
+        User user = findById(id);
+        repository.delete(user);
+    }
+
+    private void validaCampos(UserDTO usuarioAtualizado, User usuarioAtualDB) {
+        if (usuarioAtualizado.getName() == null) {
+            usuarioAtualizado.setName(usuarioAtualDB.getName());
         }
-        if (userDTO.getEmail() == null){
-            userDTO.setEmail(userDB.getEmail());
+        if (usuarioAtualizado.getEmail() == null) {
+            usuarioAtualizado.setEmail(usuarioAtualDB.getEmail());
         }
-        if (userDTO.getPassword() == null){
-            userDTO.setPassword(userDB.getPassword());
+        if (usuarioAtualizado.getPassword() == null) {
+            usuarioAtualizado.setPassword(usuarioAtualDB.getPassword());
         }
     }
 
