@@ -3,6 +3,7 @@ package br.com.mhbm.api.services.impl;
 import br.com.mhbm.api.models.User;
 import br.com.mhbm.api.models.dto.UserDTO;
 import br.com.mhbm.api.repositories.UserRepository;
+import br.com.mhbm.api.services.exceptions.DataIntegrityViolationException;
 import br.com.mhbm.api.services.exceptions.EmptyListException;
 import br.com.mhbm.api.services.exceptions.ObjectNotFoundException;
 import org.junit.jupiter.api.*;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -116,17 +117,42 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Create Validate")
     @Order(5)
-    void create() {
+    void deveCriarUmNovoUsuarioComSucesso() {
+        when(repository.save(any())).thenReturn(user);
+        User resultado = service.create(userDTO);
+        assertNotNull(resultado);
+        assertEquals(User.class, resultado.getClass());
+        assertAll("Validações de user",
+                () -> assertEquals(ID, resultado.getId()),
+                () -> assertEquals(NAME, resultado.getName()),
+                () -> assertEquals(EMAIL, resultado.getEmail()),
+                () -> assertEquals(PASSWORD, resultado.getPassword())
+        );
+        verify(repository).save(any());
     }
 
     @Test
+    @DisplayName("Create Exception")
     @Order(6)
-    void update() {
+    void deveRetornarUmaExceptionAoCriarUsuarioComEmailJaCadastrado() {
+        when(repository.findUserByEmail(anyString())).thenThrow(new DataIntegrityViolationException("E-mail já cadastrado no sistema"));
+        RuntimeException ex = Assertions.assertThrows(DataIntegrityViolationException.class,
+                () -> service.create(userDTO)
+        );
+        assertEquals(DataIntegrityViolationException.class, ex.getClass());
+        assertEquals("E-mail já cadastrado no sistema", ex.getMessage());
+        verify(repository).findUserByEmail(anyString());
     }
 
     @Test
     @Order(7)
+    void update() {
+    }
+
+    @Test
+    @Order(8)
     void delete() {
     }
 
