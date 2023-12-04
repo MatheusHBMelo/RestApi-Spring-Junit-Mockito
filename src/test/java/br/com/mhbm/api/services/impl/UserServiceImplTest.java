@@ -18,8 +18,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -147,12 +146,59 @@ class UserServiceImplTest {
     }
 
     @Test
+    @DisplayName("Update Validate")
     @Order(7)
-    void update() {
+    void deveAtualizarUmUsuarioCadastradoComSucesso() {
+        when(repository.findById(anyInt())).thenReturn(userOptional);
+        when(repository.findUserByEmail(anyString())).thenReturn(userOptional);
+        when(repository.save(any())).thenReturn(user);
+        User resultado = service.update(userDTO);
+        assertNotNull(resultado);
+        assertEquals(User.class, resultado.getClass());
+        assertAll("Validações de user",
+                () -> assertEquals(ID, resultado.getId()),
+                () -> assertEquals(NAME, resultado.getName()),
+                () -> assertEquals(EMAIL, resultado.getEmail()),
+                () -> assertEquals(PASSWORD, resultado.getPassword())
+        );
+        verify(repository, times(1)).findById(anyInt());
+        verify(repository, times(1)).findUserByEmail(anyString());
+        verify(repository, times(1)).save(any());
+        verifyNoMoreInteractions(repository);
     }
 
     @Test
+    @DisplayName("Update Exception I")
     @Order(8)
+    void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComIdInexistente() {
+        when(repository.findById(ID)).thenThrow(new ObjectNotFoundException("Objeto de id:" + ID + " não encontrado"));
+        RuntimeException ex = Assertions.assertThrows(ObjectNotFoundException.class,
+                () -> service.update(userDTO)
+        );
+        assertEquals(ObjectNotFoundException.class, ex.getClass());
+        assertEquals("Objeto de id:" + ID + " não encontrado", ex.getMessage());
+        verify(repository, times(1)).findById(ID);
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("Update Exception II")
+    @Order(9)
+    void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComEmailJaCadastrado() {
+        when(repository.findById(ID)).thenReturn(userOptional);
+        when(repository.findUserByEmail(anyString())).thenThrow(new DataIntegrityViolationException("E-mail já cadastrado no sistema"));
+        RuntimeException ex = Assertions.assertThrows(DataIntegrityViolationException.class,
+                () -> service.update(userDTO)
+        );
+        assertEquals(DataIntegrityViolationException.class, ex.getClass());
+        assertEquals("E-mail já cadastrado no sistema", ex.getMessage());
+        verify(repository, times(1)).findById(ID);
+        verify(repository, times(1)).findUserByEmail(anyString());
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @Order(10)
     void delete() {
     }
 
