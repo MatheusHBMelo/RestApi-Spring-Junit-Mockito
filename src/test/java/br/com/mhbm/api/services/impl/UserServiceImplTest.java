@@ -13,6 +13,7 @@ import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -106,7 +107,8 @@ class UserServiceImplTest {
     @DisplayName("FindAll Exception")
     @Order(4)
     void deveRetornarUmaExceptionSeListaDeUsuariosEstiverVazia() {
-        when(repository.findAll()).thenThrow(new EmptyListException("User list is empty"));
+        //when(repository.findAll()).thenThrow(new EmptyListException("User list is empty"));
+        when(repository.findAll()).thenReturn(List.of());
         RuntimeException ex = Assertions.assertThrows(EmptyListException.class,
                 () -> service.findAll()
         );
