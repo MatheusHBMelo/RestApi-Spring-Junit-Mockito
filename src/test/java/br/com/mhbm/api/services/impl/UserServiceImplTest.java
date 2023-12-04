@@ -185,21 +185,42 @@ class UserServiceImplTest {
     @DisplayName("Update Exception II")
     @Order(9)
     void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComEmailJaCadastrado() {
-        when(repository.findById(ID)).thenReturn(userOptional);
+        when(repository.findById(anyInt())).thenReturn(userOptional);
         when(repository.findUserByEmail(anyString())).thenThrow(new DataIntegrityViolationException("E-mail já cadastrado no sistema"));
         RuntimeException ex = Assertions.assertThrows(DataIntegrityViolationException.class,
                 () -> service.update(userDTO)
         );
         assertEquals(DataIntegrityViolationException.class, ex.getClass());
         assertEquals("E-mail já cadastrado no sistema", ex.getMessage());
-        verify(repository, times(1)).findById(ID);
+        verify(repository, times(1)).findById(anyInt());
         verify(repository, times(1)).findUserByEmail(anyString());
         verifyNoMoreInteractions(repository);
     }
 
     @Test
+    @DisplayName("Delete Validate")
     @Order(10)
-    void delete() {
+    void deveExcluirUmUsuarioCadastradoComSucesso() {
+        when(repository.findById(anyInt())).thenReturn(userOptional);
+        doNothing().when(repository).deleteById(anyInt());
+        service.delete(ID);
+        verify(repository, times(1)).findById(anyInt());
+        verify(repository, times(1)).deleteById(anyInt());
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("Delete Exception")
+    @Order(11)
+    void deveRetornarUmaExceptionAoTentarExcluirUmUsuarioInexistente() {
+        when(repository.findById(anyInt())).thenThrow(new ObjectNotFoundException("Objeto de id:" + ID + " não encontrado"));
+        RuntimeException ex = Assertions.assertThrows(ObjectNotFoundException.class,
+                () -> service.delete(ID)
+        );
+        assertEquals(ObjectNotFoundException.class, ex.getClass());
+        assertEquals("Objeto de id:" + ID + " não encontrado", ex.getMessage());
+        verify(repository, times(1)).findById(ID);
+        verifyNoMoreInteractions(repository);
     }
 
     private void initObjects() {

@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void delete(Integer id) {
         User user = findById(id);
-        repository.delete(user);
+        repository.deleteById(user.getId());
     }
 
     private void validaCampos(UserDTO usuarioAtualizado, User usuarioAtualDB) {
