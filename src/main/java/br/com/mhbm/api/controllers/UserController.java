@@ -11,6 +11,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
@@ -32,7 +33,7 @@ public class UserController {
                 .body(service.findAll()
                         .stream()
                         .map(x -> mapper.map(x, UserDTO.class))
-                        .toList());
+                        .collect(Collectors.toList()));
     }
 
     @PostMapping("")
@@ -46,13 +47,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> update(@PathVariable(value = "id") Integer id, @RequestBody UserDTO userDTO){
+    public ResponseEntity<UserDTO> update(@PathVariable(value = "id") Integer id, @RequestBody UserDTO userDTO) {
         userDTO.setId(id);
         return ResponseEntity.status(HttpStatus.OK).body(mapper.map(service.update(userDTO), UserDTO.class));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<UserDTO> delete(@PathVariable(value = "id") Integer id){
+    public ResponseEntity<UserDTO> delete(@PathVariable(value = "id") Integer id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
