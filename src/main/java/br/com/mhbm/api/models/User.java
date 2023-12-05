@@ -2,12 +2,14 @@ package br.com.mhbm.api.models;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
+@Getter
 @Entity
 @Table(name = "TB_USER")
 public class User {
