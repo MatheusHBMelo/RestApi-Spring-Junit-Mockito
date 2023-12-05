@@ -7,7 +7,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @AllArgsConstructor
-@Setter @Getter
+@Getter
 public class StandardError {
     private LocalDateTime timestamp;
     private Integer status;

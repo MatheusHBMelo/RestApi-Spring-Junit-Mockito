@@ -7,15 +7,18 @@ import br.com.mhbm.api.services.exceptions.DataIntegrityViolationException;
 import br.com.mhbm.api.services.exceptions.EmptyListException;
 import br.com.mhbm.api.services.exceptions.ObjectNotFoundException;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -24,12 +27,12 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UserServiceImplTest {
-
     public static final int ID = 1;
     public static final String NAME = "Matheus";
     public static final String EMAIL = "matheus@email.com";
     public static final String PASSWORD = "12345";
     public static final int INDEX = 0;
+
     @InjectMocks
     private UserServiceImpl service;
 
@@ -39,8 +42,8 @@ class UserServiceImplTest {
     @Mock
     private ModelMapper mapper;
 
-    private User user;
-    private UserDTO userDTO;
+    private User user = new User();
+    private UserDTO userDTO = new UserDTO();
     private Optional<User> userOptional;
 
     @BeforeEach
@@ -50,11 +53,12 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("FindById Validate")
+    @DisplayName("FindById Validate test")
     @Order(1)
     void deveRetornarUsuarioExistenteAoBuscarPorId() {
         when(repository.findById(anyInt())).thenReturn(userOptional);
         User resultado = service.findById(ID);
+        resultado.setId(ID);
         assertNotNull(resultado);
         assertEquals(User.class, resultado.getClass());
         assertAll("Validações do User",
@@ -67,16 +71,10 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("FindById Exception")
+    @DisplayName("FindById Exception test")
     @Order(2)
     void deveRetornarUmaExceptionAoBuscarPorIdInexistente() {
         when(repository.findById(ID)).thenThrow(new ObjectNotFoundException("Objeto de id:" + ID + " não encontrado"));
-//        try {
-//            service.findById(ID);
-//        } catch (RuntimeException ex){
-//            assertEquals(ObjectNotFoundException.class, ex.getClass());
-//            assertEquals("Objeto de id:"+ ID + " não encontrado", ex.getMessage());
-//        }
         RuntimeException ex = Assertions.assertThrows(ObjectNotFoundException.class,
                 () -> service.findById(ID)
         );
@@ -86,7 +84,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("FindAll Validate")
+    @DisplayName("FindAll Validate test")
     @Order(3)
     void deveRetornarUmaListaDeUsuariosValidos() {
         when(repository.findAll()).thenReturn(List.of(user));
@@ -104,10 +102,9 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("FindAll Exception")
+    @DisplayName("FindAll Exception test")
     @Order(4)
     void deveRetornarUmaExceptionSeListaDeUsuariosEstiverVazia() {
-        //when(repository.findAll()).thenThrow(new EmptyListException("User list is empty"));
         when(repository.findAll()).thenReturn(List.of());
         RuntimeException ex = Assertions.assertThrows(EmptyListException.class,
                 () -> service.findAll()
@@ -118,7 +115,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("Create Validate")
+    @DisplayName("Create Validate test")
     @Order(5)
     void deveCriarUmNovoUsuarioComSucesso() {
         when(repository.save(any())).thenReturn(user);
@@ -135,7 +132,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("Create Exception")
+    @DisplayName("Create Exception test")
     @Order(6)
     void deveRetornarUmaExceptionAoCriarUsuarioComEmailJaCadastrado() {
         when(repository.findUserByEmail(anyString())).thenThrow(new DataIntegrityViolationException("E-mail já cadastrado no sistema"));
@@ -148,7 +145,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("Update Validate")
+    @DisplayName("Update Validate test")
     @Order(7)
     void deveAtualizarUmUsuarioCadastradoComSucesso() {
         when(repository.findById(anyInt())).thenReturn(userOptional);
@@ -169,8 +166,27 @@ class UserServiceImplTest {
         verifyNoMoreInteractions(repository);
     }
 
+    @ParameterizedTest
+    @MethodSource("provideUserDataForUpdate")
+    @DisplayName("Update Validate Null Attributes test")
+    @Order(10)
+    void deveAtualizarUsuarioComDiferentesCenariosNosAtributos(UserDTO userDTO, User existingUser) {
+        when(repository.findById(anyInt())).thenReturn(userOptional);
+        when(repository.findUserByEmail(anyString())).thenReturn(userOptional);
+        when(repository.save(any())).thenReturn(user);
+        User resultado = service.update(userDTO);
+        assertNotNull(resultado);
+        assertEquals(existingUser.getClass(), resultado.getClass());
+        assertAll("Validações de user",
+                () -> assertEquals(existingUser.getId(), resultado.getId()),
+                () -> assertEquals(existingUser.getName(), resultado.getName()),
+                () -> assertEquals(existingUser.getEmail(), resultado.getEmail()),
+                () -> assertEquals(existingUser.getPassword(), resultado.getPassword())
+        );
+    }
+
     @Test
-    @DisplayName("Update Exception I")
+    @DisplayName("Update Exception test I")
     @Order(8)
     void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComIdInexistente() {
         when(repository.findById(ID)).thenThrow(new ObjectNotFoundException("Objeto de id:" + ID + " não encontrado"));
@@ -184,7 +200,7 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("Update Exception II")
+    @DisplayName("Update Exception test II")
     @Order(9)
     void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComEmailJaCadastrado() {
         when(repository.findById(anyInt())).thenReturn(userOptional);
@@ -200,8 +216,31 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("Delete Validate")
+    @DisplayName("Update Exception test III")
     @Order(10)
+    void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComEmailJaCadastradoCenario2() {
+        // Simulando um usuário no banco com o mesmo email
+        userDTO.setId(1);  // Um ID válido
+        userDTO.setEmail("test@example.com");
+        // Criando um Optional<User> simulado
+        user.setId(2);  // Um ID diferente do ID do userDTO
+        user.setEmail("test@example.com");
+        Optional<User> userOptional2 = Optional.of(user);
+        when(repository.findById(anyInt())).thenReturn(userOptional2);
+        when(repository.findUserByEmail(anyString())).thenReturn(userOptional2);
+        RuntimeException ex = Assertions.assertThrows(DataIntegrityViolationException.class,
+                () -> service.update(userDTO)
+        );
+        assertEquals(DataIntegrityViolationException.class, ex.getClass());
+        assertEquals("E-mail já cadastrado no sistema", ex.getMessage());
+        verify(repository, times(1)).findById(anyInt());
+        verify(repository, times(1)).findUserByEmail(anyString());
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    @DisplayName("Delete Validate test")
+    @Order(11)
     void deveExcluirUmUsuarioCadastradoComSucesso() {
         when(repository.findById(anyInt())).thenReturn(userOptional);
         doNothing().when(repository).deleteById(anyInt());
@@ -212,8 +251,8 @@ class UserServiceImplTest {
     }
 
     @Test
-    @DisplayName("Delete Exception")
-    @Order(11)
+    @DisplayName("Delete Exception test")
+    @Order(12)
     void deveRetornarUmaExceptionAoTentarExcluirUmUsuarioInexistente() {
         when(repository.findById(anyInt())).thenThrow(new ObjectNotFoundException("Objeto de id:" + ID + " não encontrado"));
         RuntimeException ex = Assertions.assertThrows(ObjectNotFoundException.class,
@@ -229,5 +268,25 @@ class UserServiceImplTest {
         user = new User(ID, NAME, EMAIL, PASSWORD);
         userDTO = new UserDTO(ID, NAME, EMAIL, PASSWORD);
         userOptional = Optional.of(new User(ID, NAME, EMAIL, PASSWORD));
+    }
+
+    private static Stream<Arguments> provideUserDataForUpdate() {
+        // Caso 1: Name nulo
+        UserDTO userDTO1 = new UserDTO(ID, null, EMAIL, PASSWORD);
+        User existingUser1 = new User(ID, NAME, EMAIL, PASSWORD);
+
+        // Caso 2: Email nulo
+        UserDTO userDTO2 = new UserDTO(ID, NAME, null, PASSWORD);
+        User existingUser2 = new User(ID, NAME, EMAIL, PASSWORD);
+
+        // Caso 3: Password nulo
+        UserDTO userDTO3 = new UserDTO(ID, NAME, EMAIL, null);
+        User existingUser3 = new User(ID, NAME, EMAIL, PASSWORD);
+
+        return Stream.of(
+                Arguments.of(userDTO1, existingUser1),
+                Arguments.of(userDTO2, existingUser2),
+                Arguments.of(userDTO3, existingUser3)
+        );
     }
 }
