@@ -271,15 +271,15 @@ class UserServiceImplTest {
     }
 
     private static Stream<Arguments> provideUserDataForUpdate() {
-        // Caso 1: Name nulo, outros campos preenchidos
+        // Caso 1: Name nulo
         UserDTO userDTO1 = new UserDTO(ID, null, EMAIL, PASSWORD);
         User existingUser1 = new User(ID, NAME, EMAIL, PASSWORD);
 
-        // Caso 2: Email nulo, outros campos preenchidos
+        // Caso 2: Email nulo
         UserDTO userDTO2 = new UserDTO(ID, NAME, null, PASSWORD);
         User existingUser2 = new User(ID, NAME, EMAIL, PASSWORD);
 
-        // Caso 3: Password nulo, outros campos preenchidos
+        // Caso 3: Password nulo
         UserDTO userDTO3 = new UserDTO(ID, NAME, EMAIL, null);
         User existingUser3 = new User(ID, NAME, EMAIL, PASSWORD);
 
