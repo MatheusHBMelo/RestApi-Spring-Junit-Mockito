@@ -169,7 +169,7 @@ class UserServiceImplTest {
     @ParameterizedTest
     @MethodSource("provideUserDataForUpdate")
     @DisplayName("Update Validate Null Attributes test")
-    @Order(10)
+    @Order(8)
     void deveAtualizarUsuarioComDiferentesCenariosNosAtributos(UserDTO userDTO, User existingUser) {
         when(repository.findById(anyInt())).thenReturn(userOptional);
         when(repository.findUserByEmail(anyString())).thenReturn(userOptional);
@@ -187,7 +187,7 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("Update Exception test I")
-    @Order(8)
+    @Order(9)
     void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComIdInexistente() {
         when(repository.findById(ID)).thenThrow(new ObjectNotFoundException("Objeto de id:" + ID + " não encontrado"));
         RuntimeException ex = Assertions.assertThrows(ObjectNotFoundException.class,
@@ -201,7 +201,7 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("Update Exception test II")
-    @Order(9)
+    @Order(10)
     void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComEmailJaCadastrado() {
         when(repository.findById(anyInt())).thenReturn(userOptional);
         when(repository.findUserByEmail(anyString())).thenThrow(new DataIntegrityViolationException("E-mail já cadastrado no sistema"));
@@ -217,7 +217,7 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("Update Exception test III")
-    @Order(10)
+    @Order(11)
     void deveRetornarUmaExceptionAoTentarAtualizarUsuarioComEmailJaCadastradoCenario2() {
         // Simulando um usuário no banco com o mesmo email
         userDTO.setId(1);  // Um ID válido
@@ -240,7 +240,7 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("Delete Validate test")
-    @Order(11)
+    @Order(12)
     void deveExcluirUmUsuarioCadastradoComSucesso() {
         when(repository.findById(anyInt())).thenReturn(userOptional);
         doNothing().when(repository).deleteById(anyInt());
@@ -252,7 +252,7 @@ class UserServiceImplTest {
 
     @Test
     @DisplayName("Delete Exception test")
-    @Order(12)
+    @Order(13)
     void deveRetornarUmaExceptionAoTentarExcluirUmUsuarioInexistente() {
         when(repository.findById(anyInt())).thenThrow(new ObjectNotFoundException("Objeto de id:" + ID + " não encontrado"));
         RuntimeException ex = Assertions.assertThrows(ObjectNotFoundException.class,
