@@ -5,10 +5,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class ApiApplicationTests {
-
-	@Test
-	void contextLoads() {
-		ApiApplication.main(new String[] {});
-	}
-
+    @Test
+    void contextLoads() {
+        ApiApplication.main(new String[]{});
+    }
 }
